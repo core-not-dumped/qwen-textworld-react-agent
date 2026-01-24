@@ -1,0 +1,16 @@
+ReAct
+epoch = 0, success_rate = 89.79591836734694%
+success_num = 88, fail_num = 10
+epoch = 0, success_rate = 95.8041958041958%
+success_num = 137, fail_num = 6
+epoch = 1, success_rate = 95.28619528619528%
+success_num = 283, fail_num = 14
+epoch = 2, success_rate = 94.70046082949308%
+success_num = 411, fail_num = 23
+epoch = 3, success_rate = 94.4055944055944%
+success_num = 540, fail_num = 32
+epoch = 4, success_rate = 94.53781512605042%
+success_num = 675, fail_num = 39
+epoch = 5, success_rate = 94.50292397660819%
+success_num = 808, fail_num = 47
+ReAct=Im

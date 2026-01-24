@@ -19,7 +19,7 @@ TEXTWORLD_CHARSET = (
 )
 
 class TextWorldEnv(gym.Env):
-    def __init__(self, options, max_steps=50):
+    def __init__(self, options, inference_type, max_steps=50):
         options.seeds = random.randint(1, 1000)
         self.game_file = options
         self.max_steps = max_steps
@@ -38,6 +38,12 @@ class TextWorldEnv(gym.Env):
         self.steps = 0
         self.context = ""
 
+        self.success = 0
+        self.fail = 0
+        self.eps = 1e-5
+
+        self.inference_type = inference_type
+
     def reset(self, seed=None, options=None):
         self.steps = 0
         state = self.env.reset()
@@ -48,15 +54,26 @@ class TextWorldEnv(gym.Env):
     def step(self, action):
         self.steps += 1
         state, reward, done = self.env.step(action)
-        obs = state.feedback
         terminated = done
         truncated = self.steps >= self.max_steps
-        self.context += f"> {action}\n{self.normalize_newlines(obs)}"
-        return self.context + "Think:", reward, terminated, truncated, {}
+        self.context += f"> {action}\n{self.normalize_newlines(state.feedback)}"
+        if terminated:      self.success += 1
+        if truncated:       self.fail += 1
+
+        if self.inference_type == 'ReAct':
+            obs = self.context + "Think: "
+        elif self.inference_type == 'ReAct-Im':
+            obs = self.context + "Think: "
+        elif self.inference_type == 'Act':
+            obs = self.context + f"Possible Actions: {', '.join(self.env.state.possible_admissible_commands)}\nAction: "
+        return obs, reward, terminated, truncated, {}
         
     def add_think(self, think):
-        self.context += f"Think: {self.normalize_newlines(think)}"
-        return self.context + f"\n\nPossible Actions: {', '.join(self.env.state.possible_admissible_commands)}\nAction: "
+        if self.inference_type == 'ReAct':
+            self.context += f"Think: {self.normalize_newlines(think)}"
+            return self.context + f"Possible Actions: {', '.join(self.env.state.possible_admissible_commands)}\nAction: "
+        elif self.inference_type == 'ReAct-Im':
+            return self.context + f"Think: {self.normalize_newlines(think)}" + f"Possible Actions: {', '.join(self.env.state.possible_admissible_commands)}\nAction: "
 
     def normalize_newlines(self, s):
         return s.replace("\n", " ") + '\n'
