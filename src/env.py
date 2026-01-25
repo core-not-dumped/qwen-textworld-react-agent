@@ -19,12 +19,10 @@ TEXTWORLD_CHARSET = (
 )
 
 class TextWorldEnv(gym.Env):
-    def __init__(self, options, inference_type, max_steps=50):
-        options.seeds = random.randint(1, 1000)
-        self.game_file = options
+    def __init__(self, options, inference_type, train_seed_num, max_steps=50):
+        self.options = options # random.randint(1, 1000)
         self.max_steps = max_steps
-        game_file, _  = textworld.make(options)
-        self.env = textworld.start(game_file)
+        self.train_seed_num = train_seed_num
 
         self.observation_space = spaces.Text(
             max_length=4096,
@@ -46,10 +44,18 @@ class TextWorldEnv(gym.Env):
 
     def reset(self, seed=None, options=None):
         self.steps = 0
-        state = self.env.reset()
-        obs = self.normalize_newlines(state.feedback[1210:]) # remove TEXT WORLD
-        self.context = obs
-        return self.context + "Think:", {}
+        self.generate_new_game(self.options, random.randint(self.train_seed_num, self.train_seed_num*10))
+        state = self.env.state
+        self.context = self.normalize_newlines(state.feedback[1210:]) # remove TEXT WORLD
+
+        if self.inference_type == 'ReAct':
+            obs = self.context + "Think: "
+        elif self.inference_type == 'ReAct-Im':
+            obs = self.context + "Think: "
+        elif self.inference_type == 'Act':
+            obs = self.context + f"Possible Actions: {', '.join(self.env.state.possible_admissible_commands)}\nAction: "
+        
+        return obs, {}
 
     def step(self, action):
         self.steps += 1
@@ -66,14 +72,26 @@ class TextWorldEnv(gym.Env):
             obs = self.context + "Think: "
         elif self.inference_type == 'Act':
             obs = self.context + f"Possible Actions: {', '.join(self.env.state.possible_admissible_commands)}\nAction: "
+        #print(obs)
+        #sprint('-----------------------------------------------')
         return obs, reward, terminated, truncated, {}
         
     def add_think(self, think):
         if self.inference_type == 'ReAct':
             self.context += f"Think: {self.normalize_newlines(think)}"
+            #print(self.context + f"Possible Actions: {', '.join(self.env.state.possible_admissible_commands)}\nAction: ")
+            #print('-----------------------------------------------')
             return self.context + f"Possible Actions: {', '.join(self.env.state.possible_admissible_commands)}\nAction: "
         elif self.inference_type == 'ReAct-Im':
+            #print(self.context + f"Think: {self.normalize_newlines(think)}" + f"Possible Actions: {', '.join(self.env.state.possible_admissible_commands)}\nAction: ")
+            #print('-----------------------------------------------')
             return self.context + f"Think: {self.normalize_newlines(think)}" + f"Possible Actions: {', '.join(self.env.state.possible_admissible_commands)}\nAction: "
 
     def normalize_newlines(self, s):
         return s.replace("\n", " ") + '\n'
+    
+    def generate_new_game(self, options, seeds):
+        options.seeds = seeds
+        game_file, _ = textworld.make(options)
+        self.env = textworld.start(game_file)
+        self.env.reset()
