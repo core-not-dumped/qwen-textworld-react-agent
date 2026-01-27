@@ -78,13 +78,12 @@ for epoch in range(train_epoch_num):
     for batch in tqdm(train_loader, desc=f"Epoch {epoch+1}"):
         batch = {k: v.to("cuda") for k, v in batch.items()}
 
-        with torch.autocast("cuda", dtype=torch.bfloat16):
-            outputs = model(
-                input_ids=batch["input_ids"],
-                attention_mask=batch["attention_mask"],
-                labels=batch["labels"]
-            )
-            loss = outputs.loss
+        outputs = model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"],
+            labels=batch["labels"]
+        )
+        loss = outputs.loss
 
         loss.backward()
         optimizer.step()

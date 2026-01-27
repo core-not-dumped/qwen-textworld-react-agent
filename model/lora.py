@@ -16,8 +16,8 @@ class LoRALinear(nn.Module):
             self.linear.bias.requires_grad = False
 
         # LoRA 파라미터 초기화
-        self.A = nn.Parameter(torch.zeros((r, linear.in_features)))
-        self.B = nn.Parameter(torch.zeros((linear.out_features, r)))
+        self.A = nn.Parameter(torch.zeros((r, linear.in_features), dtype=self.linear.weight.dtype))
+        self.B = nn.Parameter(torch.zeros((linear.out_features, r), dtype=self.linear.weight.dtype))
         nn.init.kaiming_uniform_(self.A, a=math.sqrt(5))
         nn.init.zeros_(self.B)
 

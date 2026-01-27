@@ -113,6 +113,7 @@ class TextWorldEnvRL(gym.Env):
         )
 
         self.steps = 0
+        self.progress = 0
         self.context = ""
 
         self.success = 0
@@ -121,6 +122,7 @@ class TextWorldEnvRL(gym.Env):
 
     def reset(self, seed=None, options=None):
         self.steps = 0
+        self.progress = 0
         self.generate_new_game(self.options, random.randint(1, self.train_seed_num))
         state = self.env.state
         self.context = state.feedback[1210:] # remove TEXT WORLD
@@ -129,6 +131,8 @@ class TextWorldEnvRL(gym.Env):
         return obs, {}
 
     def step(self, action):
+        if action.strip().lower() == self.env.state['extra.walkthrough'][self.progress]:
+            self.progress += 1
         self.steps += 1
         state, reward, done = self.env.step(action)
         terminated = done
@@ -140,6 +144,10 @@ class TextWorldEnvRL(gym.Env):
         #print(obs)
         #sprint('-----------------------------------------------')
         return obs, reward, terminated, truncated, {}
+    
+    def step_reward(self, action):
+        if action.lower() == self.env.state['extra.walkthrough'][self.progress]:   return 1
+        else:   return 0
 
     def normalize_newlines(self, s):
         return s.replace("\n", " ") + '\n'

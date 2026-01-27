@@ -3,11 +3,12 @@ from gymnasium.vector import SyncVectorEnv
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from tqdm import tqdm
 import torch
-import time
+from collections import deque
 
 from src.hyperparam import *
 from src.env import *
 from model.lora import *
+from rl.loss import *
 
 options = textworld.GameOptions()
 options.nb_objects = nb_objects
@@ -37,39 +38,50 @@ model = AutoModelForCausalLM.from_pretrained(
 model.load_state_dict(torch.load(sft_model_pth)) # sft finetuned
 apply_lora_for_casulLM(model, r=4, alpha=8, device=device)
 model.train()
-
 optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=lr)
 
+# newlines까지 학습시킬것임
+newline_id = tokenizer("\n", add_special_tokens=False).input_ids[0]
+prompts, _ = envs.reset()
+
+# 학습 루프
+batch_losses = deque(maxlen=50)
 for update in tqdm(range(grpo_updates)):
     optimizer.zero_grad()
 
-    prompts, _ = envs.reset()
     prompts = list(prompts)
 
     batch_loss = 0.0
 
-    losses = []
     for env_idx, prompt in enumerate(prompts):
-        input_ids = tokenizer(
+        input_id = tokenizer(
             prompt,
             return_tensors="pt",
             padding=True
         ).input_ids.to(model.device)
-
+        
         with torch.no_grad():
             enable_lora(model)
             gen_outputs = model.generate(
-                input_ids=input_ids,
+                input_ids=input_id,
                 max_new_tokens=action_new_token,
                 do_sample=True,
-                temperature=0.8,
-                top_p=1,
+                temperature=1.0,
+                top_p=0.95,
                 num_return_sequences=group_size,
                 pad_token_id=tokenizer.pad_token_id,
                 eos_token_id=tokenizer.eos_token_id
             )
 
-        action_ids = gen_outputs[:, input_ids.shape[1]:]
+        action_ids = gen_outputs[:, input_id.shape[1]:]
+
+        # \n이 처음 나온 position을 first_pos에 저장
+        mask = (action_ids == newline_id)
+        first_pos = torch.full((group_size,), action_new_token, device=action_ids.device)
+        has_newline = mask.any(dim=1)
+        first_pos[has_newline] = mask[has_newline].float().argmax(dim=1)
+
+        # action_texts를 str형태로 저장 (\n포함안됨)
         action_texts = tokenizer.batch_decode(
             action_ids,
             skip_special_tokens=True
@@ -81,50 +93,50 @@ for update in tqdm(range(grpo_updates)):
         ]
         action_texts = [t[:t.find('\n')] if '\n' in t else t for t in action_texts]
 
+        # 각 action의 reward계산
         rewards = []
         for action in action_texts:
-            ########### step like 구현하기 ##########################
-            _, reward, done, _ = envs.envs[env_idx].step_like(action)
+            reward = envs.envs[env_idx].step_reward(action)
             rewards.append(reward)
+        rewards = torch.tensor(rewards, dtype=torch.bfloat16, device=model.device)
 
-        rewards = torch.tensor(
-            rewards,
-            dtype=torch.bfloat16,
-            device=model.device
-        )
-
+        # advantage계산
         advantages = rewards - rewards.mean()
-        advantages = advantages / (rewards.std() + 1e-6)
         advantages = advantages.detach()
 
-        outputs = model(
-            input_ids=gen_outputs,
-            labels=gen_outputs
-        )
-        log_probs = -outputs.loss
+        # log prob 계산
+        outputs = model(input_ids=gen_outputs, labels=gen_outputs)
+        action_mask = torch.zeros(gen_outputs.shape, device=gen_outputs.device)
+        for i in range(group_size): action_mask[i, input_id.shape[1]:input_id.shape[1]+first_pos[i]+1] = 1.0
+        log_probs = compute_logprob(outputs.logits, gen_outputs, action_mask)
 
+        # reg log prob 계산
         with torch.no_grad():
             disable_lora(model)
-            ref_outputs = model(
-                input_ids=gen_outputs,
-                labels=gen_outputs
-            )
-            ref_log_probs = -ref_outputs.loss
+            ref_outputs = model(input_ids=gen_outputs, labels=gen_outputs)
+            ref_log_probs = compute_logprob(ref_outputs.logits, gen_outputs, action_mask)
 
-        pg_loss = -(log_probs * advantages.mean())
-        kl_loss = kl_coef * (log_probs - ref_log_probs)
-
+        # total loss계산
+        pg_loss = -(log_probs * advantages).mean()
+        kl_loss = kl_coef * (log_probs - ref_log_probs).mean()
         loss = pg_loss + kl_loss
+        
         batch_loss += loss
-        losses.append(loss)
 
+        reward_max_idx = rewards.argmax().item()
+        prompts[env_idx], _, terminated, truncated, _ = envs.envs[env_idx].step(action_texts[reward_max_idx])
+        if terminated or truncated: prompts[env_idx], _ = envs.envs[env_idx].reset()
+    
+    batch_loss = batch_loss / num_cpu
     batch_loss.backward()
     optimizer.step()
-    tqdm.write(f"Loss: {sum(losses):.4f}")
-
-
+    batch_losses.append(batch_loss.item())
+    tqdm.write(f"Loss: {sum(batch_losses)/len(batch_losses):.4f}")
 
 merge_lora_in_self_attn(model)
 
 print(model)
 torch.save(model.state_dict(), grpo_model_pth)
+
+
+# sft action mask만들기
