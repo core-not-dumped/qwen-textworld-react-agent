@@ -36,6 +36,7 @@ model = AutoModelForCausalLM.from_pretrained(
     trust_remote_code=True
 )
 model.load_state_dict(torch.load(sft_model_pth)) # sft finetuned
+for param in model.parameters():    param.requires_grad = False # lora적용된 A, B만 학습
 apply_lora_for_casulLM(model, r=4, alpha=8, device=device)
 model.train()
 optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=lr)
