@@ -1,0 +1,111 @@
+------------------------- just inference -------------------------
+inference_type = 'ReAct'
+epoch = 0, success_rate = 66.66666666666666%
+success_num = 44, fail_num = 22
+elapsed time = 1606s
+epoch = 1, success_rate = 67.16417910447761%
+success_num = 90, fail_num = 44
+elapsed time = 1587s
+epoch = 2, success_rate = 67.8048780487805%
+success_num = 139, fail_num = 66
+elapsed time = 1578s
+epoch = 3, success_rate = 69.47368421052632%
+success_num = 198, fail_num = 87
+elapsed time = 1548s
+epoch = 4, success_rate = 68.99441340782123%
+success_num = 247, fail_num = 111
+elapsed time = 1535s
+total elapsed time = 7854s
+
+inference_type = 'ReAct-Im'
+epoch = 0, success_rate = 49.01960784313725%
+success_num = 25, fail_num = 26
+elapsed time = 1517.48s
+epoch = 1, success_rate = 55.660377358490564%
+success_num = 59, fail_num = 47
+elapsed time = 1557.45s
+epoch = 2, success_rate = 52.53164556962025%
+success_num = 83, fail_num = 75
+elapsed time = 1551.88s
+epoch = 3, success_rate = 54.460093896713616%
+success_num = 116, fail_num = 97
+elapsed time = 1644.74s
+epoch = 4, success_rate = 56.043956043956044%
+success_num = 153, fail_num = 120
+elapsed time = 1731.0740211869997
+total elapsed time = 8002.63s
+
+inference_type = 'Act'
+epoch = 0, success_rate = 49.01960784313725%
+success_num = 25, fail_num = 26
+elapsed time = 575.4763943970029s
+epoch = 1, success_rate = 45.91836734693878%
+success_num = 45, fail_num = 53
+elapsed time = 564.5607647149955s
+epoch = 2, success_rate = 43.262411347517734%
+success_num = 61, fail_num = 80
+elapsed time = 585.5610245289936s
+epoch = 3, success_rate = 39.89071038251366%
+success_num = 73, fail_num = 110
+elapsed time = 563.2906743519998s
+epoch = 4, success_rate = 41.201716738197426%
+success_num = 96, fail_num = 137
+elapsed time = 549.4015568760005s
+total elapsed time = 2838.290929001996s
+
+------------------------- sft trained -------------------------
+inference_type = 'ReAct'
+epoch = 0, success_rate = 92.26519337016575%
+success_num = 167, fail_num = 14
+elapsed time = 1753.7891254560018s
+epoch = 1, success_rate = 92.5%
+success_num = 333, fail_num = 27
+elapsed time = 1726.8597630739969s
+epoch = 2, success_rate = 92.01520912547528%
+success_num = 484, fail_num = 42
+elapsed time = 1735.3332924959977s
+epoch = 3, success_rate = 91.31075110456554%
+success_num = 620, fail_num = 59
+elapsed time = 1724.0011306509987s
+epoch = 4, success_rate = 91.31985731272295%
+success_num = 768, fail_num = 73
+elapsed time = 1721.4821358650006s
+total elapsed time = 8661.468549122s
+
+inference_type = 'ReAct-Im'
+epoch = 0, success_rate = 91.27906976744185%
+success_num = 157, fail_num = 15
+elapsed time = 1669.554136642997s
+epoch = 1, success_rate = 92.1965317919075%
+success_num = 319, fail_num = 27
+elapsed time = 1608.028540925996s
+epoch = 2, success_rate = 92.3679060665362%
+success_num = 472, fail_num = 39
+elapsed time = 1600.9562146660028s
+epoch = 3, success_rate = 91.8796992481203%
+success_num = 611, fail_num = 54
+elapsed time = 1630.1313391059957s
+epoch = 4, success_rate = 90.53030303030303%
+success_num = 717, fail_num = 75
+elapsed time = 1596.8033755600045s
+total elapsed time = 8105.47419850601s
+
+inference_type = 'Act'
+epoch = 0, success_rate = 94.88372093023256%
+success_num = 204, fail_num = 11
+elapsed time = 569.0080926649971s
+epoch = 1, success_rate = 94.5754716981132%
+success_num = 401, fail_num = 23
+elapsed time = 586.2377952800016s
+epoch = 2, success_rate = 93.53233830845771%
+success_num = 564, fail_num = 39
+elapsed time = 580.6589957399992s
+epoch = 3, success_rate = 93.79652605459057%
+success_num = 756, fail_num = 50
+elapsed time = 540.43826077001s
+epoch = 4, success_rate = 93.8185443668993%
+success_num = 941, fail_num = 62
+elapsed time = 560.3524739720015s
+total elapsed time = 2836.696166007998s
+
+------------------------- GRPO trained -------------------------

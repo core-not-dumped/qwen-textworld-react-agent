@@ -30,7 +30,7 @@ for i in tqdm(range(get_data_num)):
     # Q = prompt + f"Possible Actions: {', '.join(env.state.possible_admissible_commands)}\nAction: "
     # A = proper_action + '\n'
     # 저장
-    with open("./train_data/textworld_sft.jsonl", "a") as f:
+    with open(train_data_pth, "a") as f:
         sample = {
             "prompt": prompt + f"Possible Actions: {', '.join(env.state.possible_admissible_commands)}\nAction: ",
             "action": proper_action + '\n',

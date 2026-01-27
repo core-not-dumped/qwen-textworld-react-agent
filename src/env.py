@@ -46,7 +46,7 @@ class TextWorldEnv(gym.Env):
         self.steps = 0
         self.generate_new_game(self.options, random.randint(self.train_seed_num, self.train_seed_num*10))
         state = self.env.state
-        self.context = self.normalize_newlines(state.feedback[1210:]) # remove TEXT WORLD
+        self.context = state.feedback[1210:] # remove TEXT WORLD
 
         if self.inference_type == 'ReAct':
             obs = self.context + "Think: "
@@ -90,6 +90,60 @@ class TextWorldEnv(gym.Env):
     def normalize_newlines(self, s):
         return s.replace("\n", " ") + '\n'
     
+    def generate_new_game(self, options, seeds):
+        options.seeds = seeds
+        game_file, _ = textworld.make(options)
+        self.env = textworld.start(game_file)
+        self.env.reset()
+
+
+class TextWorldEnvRL(gym.Env):
+    def __init__(self, options, train_seed_num, max_steps=50):
+        self.options = options # random.randint(1, 1000)
+        self.max_steps = max_steps
+        self.train_seed_num = train_seed_num
+
+        self.observation_space = spaces.Text(
+            max_length=4096,
+            charset=TEXTWORLD_CHARSET
+        )
+        self.action_space = spaces.Text(
+            max_length=256,
+            charset=TEXTWORLD_CHARSET
+        )
+
+        self.steps = 0
+        self.context = ""
+
+        self.success = 0
+        self.fail = 0
+        self.eps = 1e-5
+
+    def reset(self, seed=None, options=None):
+        self.steps = 0
+        self.generate_new_game(self.options, random.randint(1, self.train_seed_num))
+        state = self.env.state
+        self.context = state.feedback[1210:] # remove TEXT WORLD
+        obs = self.context + f"Possible Actions: {', '.join(self.env.state.possible_admissible_commands)}\nAction: "
+        
+        return obs, {}
+
+    def step(self, action):
+        self.steps += 1
+        state, reward, done = self.env.step(action)
+        terminated = done
+        truncated = self.steps >= self.max_steps
+        self.context += f"> {action}\n{self.normalize_newlines(state.feedback)}"
+        if terminated:      self.success += 1
+        if truncated:       self.fail += 1
+        obs = self.context + f"Possible Actions: {', '.join(self.env.state.possible_admissible_commands)}\nAction: "
+        #print(obs)
+        #sprint('-----------------------------------------------')
+        return obs, reward, terminated, truncated, {}
+
+    def normalize_newlines(self, s):
+        return s.replace("\n", " ") + '\n'
+
     def generate_new_game(self, options, seeds):
         options.seeds = seeds
         game_file, _ = textworld.make(options)
