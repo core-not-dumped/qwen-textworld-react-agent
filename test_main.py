@@ -34,7 +34,7 @@ model = AutoModelForCausalLM.from_pretrained(
     device_map=device,
     trust_remote_code=True
 )
-model.load_state_dict(torch.load(sft_model_pth)) # finetuned
+model.load_state_dict(torch.load(grpo_model_pth)) # finetuned
 model.eval()
 print(f'{model.device = }')
 

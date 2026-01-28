@@ -109,3 +109,20 @@ elapsed time = 560.3524739720015s
 total elapsed time = 2836.696166007998s
 
 ------------------------- GRPO trained -------------------------
+inference_type = 'Act'
+epoch = 0, success_rate = 94.66019417475728%
+success_num = 390, fail_num = 22
+elapsed time = 743.0971131840051s
+epoch = 1, success_rate = 93.97741530740275%
+success_num = 749, fail_num = 48
+elapsed time = 757.7112248630001s
+epoch = 2, success_rate = 94.04466501240695%
+success_num = 1137, fail_num = 72
+elapsed time = 748.3703487939929s
+epoch = 3, success_rate = 93.96605908233815%
+success_num = 1495, fail_num = 96
+elapsed time = 731.5091005830036s
+epoch = 4, success_rate = 93.38842975206612%
+success_num = 1808, fail_num = 128
+elapsed time = 735.7329920089978s
+total elapsed time = 3716.421261219002s

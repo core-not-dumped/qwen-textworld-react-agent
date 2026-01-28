@@ -7,7 +7,7 @@ quest_length = 2
 num_cpu = 2
 think_new_token = 32
 action_new_token = 16
-max_steps = 5 # test 30, GRPO 5
+max_steps = 30 # test 30, GRPO 5
 model_name = "Qwen/Qwen3-1.7B"
 test_txt_name = 'test_result.txt'
 train_txt_name = 'train_result.txt'
@@ -18,7 +18,7 @@ grpo_model_pth = "./model/save_model/qwen3_grpo.pth"
 inference_type = 'Act' # 'ReAct', 'ReAct-Im', 'Act'
 
 train_epoch_num = 1
-grpo_updates = 1000
+grpo_updates = 200
 test_epoch_num = 5
 test_epoch_steps = 1000
 

@@ -47,6 +47,7 @@ prompts, _ = envs.reset()
 
 # 학습 루프
 batch_losses = deque(maxlen=50)
+episode_successed = deque(maxlen=50)
 for update in tqdm(range(grpo_updates)):
     optimizer.zero_grad()
 
@@ -67,7 +68,7 @@ for update in tqdm(range(grpo_updates)):
                 input_ids=input_id,
                 max_new_tokens=action_new_token,
                 do_sample=True,
-                temperature=1.0,
+                temperature=0.8,
                 top_p=0.95,
                 num_return_sequences=group_size,
                 pad_token_id=tokenizer.pad_token_id,
@@ -103,36 +104,44 @@ for update in tqdm(range(grpo_updates)):
 
         # advantage계산
         advantages = rewards - rewards.mean()
+        advantages /= rewards.std() + 1e-6
         advantages = advantages.detach()
 
         # log prob 계산
         outputs = model(input_ids=gen_outputs, labels=gen_outputs)
         action_mask = torch.zeros(gen_outputs.shape, device=gen_outputs.device)
         for i in range(group_size): action_mask[i, input_id.shape[1]:input_id.shape[1]+first_pos[i]+1] = 1.0
-        log_probs = compute_logprob(outputs.logits, gen_outputs, action_mask)
+        log_probs = compute_logprob(outputs.logits[:,:-1], gen_outputs[:,1:], action_mask[:,1:]) # logits는 한칸 미뤄서 출력됨
 
         # reg log prob 계산
         with torch.no_grad():
             disable_lora(model)
             ref_outputs = model(input_ids=gen_outputs, labels=gen_outputs)
-            ref_log_probs = compute_logprob(ref_outputs.logits, gen_outputs, action_mask)
+            ref_log_probs = compute_logprob(ref_outputs.logits[:,:-1], gen_outputs[:,1:], action_mask[:,1:])
 
         # total loss계산
         pg_loss = -(log_probs * advantages).mean()
         kl_loss = kl_coef * (log_probs - ref_log_probs).mean()
+
+        print(f'pg_loss = {pg_loss.item()}')
+        print(f'kl_loss = {kl_loss.item()}')
         loss = pg_loss + kl_loss
         
         batch_loss += loss
 
         reward_max_idx = rewards.argmax().item()
         prompts[env_idx], _, terminated, truncated, _ = envs.envs[env_idx].step(action_texts[reward_max_idx])
-        if terminated or truncated: prompts[env_idx], _ = envs.envs[env_idx].reset()
+        if terminated or truncated:
+            if terminated:  episode_successed.append(True)
+            if truncated:   episode_successed.append(False)
+            prompts[env_idx], _ = envs.envs[env_idx].reset()
     
     batch_loss = batch_loss / num_cpu
     batch_loss.backward()
     optimizer.step()
     batch_losses.append(batch_loss.item())
     tqdm.write(f"Loss: {sum(batch_losses)/len(batch_losses):.4f}")
+    tqdm.write(f"success_rate: {sum(episode_successed)/(len(episode_successed)+1e-6)*100:.2f}%")
 
 merge_lora_in_self_attn(model)
 
