@@ -109,20 +109,39 @@ elapsed time = 560.3524739720015s
 total elapsed time = 2836.696166007998s
 
 ------------------------- GRPO trained -------------------------
+inference_type = 'ReAct'
+epoch = 0, success_rate = 97.38430583501007%
+success_num = 484, fail_num = 13
+elapsed time = 2093.2898143659986s
+epoch = 1, success_rate = 96.47812166488794%
+success_num = 904, fail_num = 33
+elapsed time = 2153.4651144189993s
+epoch = 2, success_rate = 96.43874643874643%
+success_num = 1354, fail_num = 50
+elapsed time = 2110.9423515310045s
+epoch = 3, success_rate = 96.18943930321176%
+success_num = 1767, fail_num = 70
+elapsed time = 2131.0660571419867s
+epoch = 4, success_rate = 96.15720524017468%
+success_num = 2202, fail_num = 88
+elapsed time = 2046.2767587710114s
+total elapsed time = 10535.040554601s
+
 inference_type = 'Act'
-epoch = 0, success_rate = 94.66019417475728%
-success_num = 390, fail_num = 22
-elapsed time = 743.0971131840051s
-epoch = 1, success_rate = 93.97741530740275%
-success_num = 749, fail_num = 48
-elapsed time = 757.7112248630001s
-epoch = 2, success_rate = 94.04466501240695%
-success_num = 1137, fail_num = 72
-elapsed time = 748.3703487939929s
-epoch = 3, success_rate = 93.96605908233815%
-success_num = 1495, fail_num = 96
-elapsed time = 731.5091005830036s
-epoch = 4, success_rate = 93.38842975206612%
-success_num = 1808, fail_num = 128
-elapsed time = 735.7329920089978s
-total elapsed time = 3716.421261219002s
+epoch = 0, success_rate = 98.98477157360406%
+success_num = 585, fail_num = 6
+elapsed time = 802.2825839929865s
+epoch = 1, success_rate = 98.80749574105621%
+success_num = 1160, fail_num = 14
+elapsed time = 824.8890952770016s
+epoch = 2, success_rate = 98.80681818181817%
+success_num = 1739, fail_num = 21
+elapsed time = 795.8331315260148s
+epoch = 3, success_rate = 98.76015391192817%
+success_num = 2310, fail_num = 29
+elapsed time = 806.311219397001s
+epoch = 4, success_rate = 98.95833333333334%
+success_num = 2945, fail_num = 31
+elapsed time = 829.3840590420004s
+total elapsed time = 4058.700519266975s
+

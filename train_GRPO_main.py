@@ -17,7 +17,7 @@ options.quest_length = quest_length
 # make env
 def make_env(options):
     def _init():
-        return TextWorldEnvRL(options, train_seed_num, max_steps=max_steps)
+        return TextWorldEnvRL(options, train_seed_num, max_steps=GRPO_max_steps)
     return _init
 envs = SyncVectorEnv([
     make_env(options) for _ in range(num_cpu)
@@ -108,7 +108,7 @@ for update in tqdm(range(grpo_updates)):
         advantages = advantages.detach()
 
         # log prob 계산
-        outputs = model(input_ids=gen_outputs, labels=gen_outputs)
+        outputs = model(input_ids=gen_outputs)
         action_mask = torch.zeros(gen_outputs.shape, device=gen_outputs.device)
         for i in range(group_size): action_mask[i, input_id.shape[1]:input_id.shape[1]+first_pos[i]+1] = 1.0
         log_probs = compute_logprob(outputs.logits[:,:-1], gen_outputs[:,1:], action_mask[:,1:]) # logits는 한칸 미뤄서 출력됨
@@ -116,15 +116,12 @@ for update in tqdm(range(grpo_updates)):
         # reg log prob 계산
         with torch.no_grad():
             disable_lora(model)
-            ref_outputs = model(input_ids=gen_outputs, labels=gen_outputs)
+            ref_outputs = model(input_ids=gen_outputs)
             ref_log_probs = compute_logprob(ref_outputs.logits[:,:-1], gen_outputs[:,1:], action_mask[:,1:])
 
         # total loss계산
         pg_loss = -(log_probs * advantages).mean()
         kl_loss = kl_coef * (log_probs - ref_log_probs).mean()
-
-        print(f'pg_loss = {pg_loss.item()}')
-        print(f'kl_loss = {kl_loss.item()}')
         loss = pg_loss + kl_loss
         
         batch_loss += loss

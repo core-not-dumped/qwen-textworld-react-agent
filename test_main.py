@@ -16,7 +16,7 @@ options.quest_length = quest_length
 # make env
 def make_env(options):
     def _init():
-        return TextWorldEnv(options, inference_type, train_seed_num, max_steps=max_steps)
+        return TextWorldEnv(options, inference_type, train_seed_num, max_steps=test_max_steps)
     return _init
 envs = SyncVectorEnv([
     make_env(options) for _ in range(num_cpu)
