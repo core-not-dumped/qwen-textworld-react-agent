@@ -127,6 +127,24 @@ success_num = 2202, fail_num = 88
 elapsed time = 2046.2767587710114s
 total elapsed time = 10535.040554601s
 
+inference_type = 'ReAct-Im'
+epoch = 0, success_rate = 96.92622950819673%
+success_num = 473, fail_num = 15
+elapsed time = 1910.7788847989868s
+epoch = 1, success_rate = 97.42574257425743%
+success_num = 984, fail_num = 26
+elapsed time = 1858.5392264639959s
+epoch = 2, success_rate = 97.60827407886231%
+success_num = 1510, fail_num = 37
+elapsed time = 1866.0730960439832s
+epoch = 3, success_rate = 97.54901960784314%
+success_num = 1990, fail_num = 50
+elapsed time = 1949.521800980001s
+epoch = 4, success_rate = 97.61997658993367%
+success_num = 2502, fail_num = 61
+elapsed time = 1991.7834538329917s
+total elapsed time = 9576.697123635007s
+
 inference_type = 'Act'
 epoch = 0, success_rate = 98.98477157360406%
 success_num = 585, fail_num = 6
@@ -144,4 +162,3 @@ epoch = 4, success_rate = 98.95833333333334%
 success_num = 2945, fail_num = 31
 elapsed time = 829.3840590420004s
 total elapsed time = 4058.700519266975s
-

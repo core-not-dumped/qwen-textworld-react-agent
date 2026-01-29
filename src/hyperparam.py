@@ -16,7 +16,7 @@ train_data_pth = "./train_data/data/textworld_sft.jsonl"
 sft_model_pth = "./model/save_model/qwen3_sft.pth"
 grpo_model_pth = "./model/save_model/qwen3_grpo.pth"
 
-inference_type = 'ReAct' # 'ReAct', 'ReAct-Im', 'Act'
+inference_type = 'ReAct-Im' # 'ReAct', 'ReAct-Im', 'Act'
 
 train_epoch_num = 1
 grpo_updates = 1000
